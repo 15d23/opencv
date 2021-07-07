@@ -1718,8 +1718,7 @@ static const vx_enum
     }
 
 #ifdef IVX_USE_OPENCV
-    /// Convert image format (fourcc) to cv::Mat type
-    /// \return CV_USRTYPE1 for unknown image formats
+    /// Convert image format (fourcc) to cv::Mat type, throws WrapperError if not possible
     static int formatToMatType(vx_df_image format, vx_uint32 planeIdx = 0)
     {
         switch (format)
@@ -1739,7 +1738,7 @@ static const vx_enum
         case VX_DF_IMAGE_YUYV: return CV_8UC2;
         case VX_DF_IMAGE_NV12:
         case VX_DF_IMAGE_NV21: return planeIdx == 0 ? CV_8UC1 : CV_8UC2;
-        default: return CV_USRTYPE1;
+        default: throw WrapperError(std::string(__func__)+"(): unsupported image format");
         }
     }
 
@@ -2508,10 +2507,10 @@ public:
     {
         if (!areTypesCompatible(TypeToEnum<T>::value, dataType()))
             throw WrapperError(std::string(__func__) + "(): destination type is wrong");
-        if (data.size() != size())
+        if (data.size()*sizeof(T) != size())
         {
             if (data.size() == 0)
-                data.resize(size());
+                data.resize(size()/sizeof(T));
             else
                 throw WrapperError(std::string(__func__) + "(): destination size is wrong");
         }
@@ -2522,7 +2521,7 @@ public:
     {
         if (!areTypesCompatible(TypeToEnum<T>::value, dataType()))
             throw WrapperError(std::string(__func__) + "(): source type is wrong");
-        if (data.size() != size()) throw WrapperError(std::string(__func__) + "(): source size is wrong");
+        if (data.size()*sizeof(T) != size()) throw WrapperError(std::string(__func__) + "(): source size is wrong");
         copyFrom(&data[0]);
     }
 
@@ -2670,10 +2669,10 @@ public:
     {
         if (!areTypesCompatible(TypeToEnum<T>::value, dataType()))
             throw WrapperError(std::string(__func__) + "(): destination type is wrong");
-        if (data.size() != size())
+        if (data.size()*sizeof(T) != size())
         {
             if (data.size() == 0)
-                data.resize(size());
+                data.resize(size()/sizeof(T));
             else
                 throw WrapperError(std::string(__func__) + "(): destination size is wrong");
         }
@@ -2684,7 +2683,7 @@ public:
     {
         if (!areTypesCompatible(TypeToEnum<T>::value, dataType()))
             throw WrapperError(std::string(__func__) + "(): source type is wrong");
-        if (data.size() != size()) throw WrapperError(std::string(__func__) + "(): source size is wrong");
+        if (data.size()*sizeof(T) != size()) throw WrapperError(std::string(__func__) + "(): source size is wrong");
         copyFrom(&data[0]);
     }
 
